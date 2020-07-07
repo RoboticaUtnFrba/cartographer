@@ -40,7 +40,12 @@ class MapByTime {
     CHECK_GE(trajectory_id, 0);
     auto& trajectory = data_[trajectory_id];
     if (!trajectory.empty()) {
-      CHECK_GT(data.time, std::prev(trajectory.end())->first);
+      // Cartographer checks each sensor message's time_stamp to make sure
+      // consecutive messages have strictly ascending (increasing) time_stamps.
+      // Certain faulty drivers (or plugins for simulators like gazebo) may
+      // publish consecutive messages with the same time_stamp.
+      // https://github.com/cartographer-project/cartographer_ros/issues/699#issuecomment-369982655
+      CHECK_GE(data.time, std::prev(trajectory.end())->first);
     }
     trajectory.emplace(data.time, data);
   }
